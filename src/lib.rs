@@ -5,6 +5,7 @@ use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use log::{error, info};
 use std::fs::File;
 use std::io::prelude::*;
+use std::io::Write;
 use std::path::Path;
 
 pub type HttpsClient = hyper::Client<HttpsConnector<HttpConnector>>;
@@ -39,22 +40,12 @@ pub fn create_https_client() -> HttpsClient {
     client
 }
 
-pub fn get_multipart_form_data(
+pub fn get_multipart_form_data_from_binary(
     parent_id: &str,
-    file_path: &str,
+    file_name: &str,
     content_type: ContentType,
+    binary_data: Vec<u8>,
 ) -> Result<Vec<u8>> {
-    let path = Path::new(file_path);
-    let file_name = path.file_name().unwrap().to_str().unwrap();
-
-    let mut file = match File::open(file_path) {
-        Ok(f) => f,
-        Err(e) => {
-            error!("Failed to open file: {}", file_path);
-            return Err(e.into());
-        }
-    };
-
     let mut data = Vec::new();
 
     write!(
@@ -74,10 +65,35 @@ pub fn get_multipart_form_data(
         file_name,
         content_type.to_str()
     )?;
-    file.read_to_end(&mut data)?;
+
+    data.extend(binary_data);
+
     write!(data, "\r\n--{}--\r\n", BOUNDARY)?;
 
     Ok(data)
+}
+
+pub fn get_multipart_form_data_from_file(
+    parent_id: &str,
+    file_path: &str,
+    content_type: ContentType,
+) -> Result<Vec<u8>> {
+    let path = Path::new(file_path);
+    let file_name = path.file_name().unwrap().to_str().unwrap();
+
+    let mut file = match File::open(file_path) {
+        Ok(f) => f,
+        Err(e) => {
+            error!("Failed to open file: {}", file_path);
+            return Err(e.into());
+        }
+    };
+
+    let mut binary_data = Vec::new();
+
+    file.read_to_end(&mut binary_data)?;
+
+    get_multipart_form_data_from_binary(parent_id, file_name, content_type, binary_data)
 }
 
 pub async fn get_box_token(client: &HttpsClient) -> Result<String> {
@@ -189,7 +205,8 @@ mod tests {
             .read_to_end(&mut expected_data)
             .unwrap();
 
-        let actual_data = get_multipart_form_data(parent_id, file_path, content_type).unwrap();
+        let actual_data =
+            get_multipart_form_data_from_file(parent_id, file_path, content_type).unwrap();
 
         assert_eq!(expected_data, actual_data);
     }

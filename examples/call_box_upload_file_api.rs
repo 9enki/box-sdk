@@ -10,7 +10,7 @@ async fn main() -> Result<()> {
 
     let client = box_sdk::create_https_client();
     let token = box_sdk::get_box_token(&client).await?;
-    let data = box_sdk::get_multipart_form_data(
+    let data = box_sdk::get_multipart_form_data_from_file(
         "111111111111",
         "sample.txt",
         box_sdk::ContentType::TextPlain,
