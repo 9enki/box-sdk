@@ -1,7 +1,7 @@
 use anyhow::{Context, Result};
 use dotenv::dotenv;
 use hyper::{client::HttpConnector, Body, Client, Request, Uri};
-use hyper_tls::HttpsConnector;
+use hyper_rustls::{HttpsConnector, HttpsConnectorBuilder};
 use log::{error, info};
 use std::fs::File;
 use std::io::prelude::*;
@@ -28,8 +28,13 @@ impl ContentType {
 }
 
 pub fn create_https_client() -> HttpsClient {
-    let https = HttpsConnector::new();
-    let client = Client::builder().build::<_, hyper::Body>(https);
+    let https = HttpsConnectorBuilder::new()
+        .with_native_roots()
+        .https_only()
+        .enable_http1()
+        .build();
+
+    let client: Client<_, hyper::Body> = Client::builder().build(https);
 
     client
 }
