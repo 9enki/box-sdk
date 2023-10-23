@@ -1,0 +1,11 @@
+----------------------------acebdf13572468
+Content-Disposition: form-data; name="attributes"
+
+{"name":"actual_multipart_form_data.txt", "parent":{"id":"11446498"}}
+----------------------------acebdf13572468
+Content-Disposition: form-data; name="file"; filename="actual_multipart_form_data.txt"
+Content-Type: text/plain
+
+hogehugahoga
+
+----------------------------acebdf13572468--

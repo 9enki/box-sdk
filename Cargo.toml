@@ -1,0 +1,16 @@
+[package]
+name = "box-sdk"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.75"
+dotenv = "0.15.0"
+env_logger = "0.10.0"
+hyper = { version = "0.14.27", features = ["full"] }
+hyper-tls = "0.5.0"
+log = "0.4.20"
+serde_json = "1.0.107"
+tokio = { version = "1.33.0", features = ["full"] }
