@@ -11,6 +11,9 @@ use std::path::Path;
 pub type HttpsClient = hyper::Client<HttpsConnector<HttpConnector>>;
 const BOUNDARY: &'static str = "--------------------------acebdf13572468";
 
+const BOX_TOKEN_URL: &'static str = "https://api.box.com/oauth2/token";
+const BOX_UPLOAD_URL: &'static str = "https://upload.box.com/api/2.0/files/content";
+
 #[allow(dead_code)]
 pub enum ContentType {
     TextPlain,
@@ -109,7 +112,7 @@ pub async fn get_box_token(client: &HttpsClient) -> Result<String> {
 
     let req = Request::builder()
         .method("POST")
-        .uri(Uri::from_static("https://api.box.com/oauth2/token"))
+        .uri(Uri::from_static(BOX_TOKEN_URL))
         .header("Content-Type", "application/x-www-form-urlencoded")
         .body(hyper::Body::from(body))
         .unwrap();
@@ -153,9 +156,7 @@ pub async fn call_box_upload_file_api(
 ) -> Result<()> {
     let req = Request::builder()
         .method("POST")
-        .uri(Uri::from_static(
-            "https://upload.box.com/api/2.0/files/content",
-        ))
+        .uri(Uri::from_static(BOX_UPLOAD_URL))
         .header("Authorization", format!("Bearer {}", token))
         .header(
             "Content-Type",
@@ -175,8 +176,8 @@ pub async fn call_box_upload_file_api(
 
     if status.is_success() {
         info!(
-            "\nPOST https://api.box.com/oauth2/token\nstatus: {}\nbody: {:?}\n",
-            status, buf
+            "\nPOST {}\nstatus: {}\nbody: {:?}\n",
+            BOX_UPLOAD_URL, status, buf
         );
     } else {
         error!(
