@@ -119,18 +119,17 @@ pub async fn get_box_token(client: &HttpsClient) -> Result<String> {
 
     let res = client.request(req).await?;
 
-    info!("\ntoken api response: {:?}\n", res);
+    info!("token api response: {:?}", res);
 
     let status = res.status();
     let buf = hyper::body::to_bytes(res)
         .await
         .context("Can not to_bytes res.body")?;
 
+    info!("POST {}", BOX_TOKEN_URL);
     if status.is_success() {
-        info!(
-            "\nPOST https://api.box.com/oauth2/token\nstatus: {}\nbody: {:?}\n",
-            status, buf
-        );
+        info!("status: {}", status);
+        info!("body: {:?}", buf);
 
         let json_data = std::str::from_utf8(&buf)?;
 
@@ -141,8 +140,10 @@ pub async fn get_box_token(client: &HttpsClient) -> Result<String> {
 
         Ok(token.to_string())
     } else {
+        error!("status: {}", status);
+        error!("body: {:?}", buf);
         Err(anyhow::anyhow!(
-            "\nstatus code: {}\nresponse body message: {:?}\n",
+            "status code: {}\n    response body message: {:?}",
             status,
             buf
         ))
@@ -167,23 +168,20 @@ pub async fn call_box_upload_file_api(
 
     let res = client.request(req).await?;
 
-    info!("\nupload api response: {:?}\n", res);
+    info!("upload api response: {:?}", res);
 
     let status = res.status();
     let buf = hyper::body::to_bytes(res)
         .await
         .context("Can not to_bytes res.body")?;
 
+    info!("POST {}", BOX_UPLOAD_URL);
     if status.is_success() {
-        info!(
-            "\nPOST {}\nstatus: {}\nbody: {:?}\n",
-            BOX_UPLOAD_URL, status, buf
-        );
+        info!("status: {}", status);
+        info!("body: {:?}", buf);
     } else {
-        error!(
-            "\nstatus code: {}\nresponse body message: {:?}\n",
-            status, buf
-        );
+        error!("status: {}", status);
+        error!("body: {:?}", buf);
     }
 
     Ok(())
